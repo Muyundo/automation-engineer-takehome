@@ -4,12 +4,13 @@
 
 This repository contains an end-to-end automation test suite built with Cypress for the Automation Engineer take-home assessment.
 
-The suite validates the primary request lifecycle in the application under test:
+The suite currently validates both the primary request lifecycle and an important negative workflow condition in the application under test:
 
 - a requester logs in and creates a request
-- the request is processed by the application
-- a reviewer approves the request
+- the request is processed asynchronously by the application
+- a reviewer approves the request once it is ready for review
 - a claimer claims the approved request
+- a reviewer should not see a newly created request before the AI processing phase completes
 
 Application under test:
 
@@ -17,25 +18,37 @@ Application under test:
 
 ## Test Workflow Covered
 
-The main test is implemented in `cypress/e2e/workflow.cy.js` and follows the business flow below:
+The current implementation in `cypress/e2e/workflow.cy.js` includes two end-to-end scenarios.
+
+### 1. Full request lifecycle
+
+This test covers the main business workflow from start to finish:
 
 1. **Requester login**  
    Logs in with requester credentials using reusable Cypress commands.
 
 2. **Request creation**  
-   Creates a new request with a unique title so each test run remains isolated.
+   Creates a new request with a unique title so each run stays isolated and repeatable.
 
-3. **Status progression**  
-   Waits for the request to move through the application state until it is ready for review.
+3. **AI processing and status transition**  
+   Waits for the request to appear and verifies that its status changes to `ready for review`.
 
 4. **Reviewer approval**  
-   Logs in as the reviewer, searches for the request, opens it, and approves it.
+   Logs in as the reviewer, searches for the request, opens the request details page, and approves it using the confirmation modal.
 
 5. **Claimer action**  
-   Logs in as the claimer, finds the approved request, and claims it.
+   Logs in as the claimer, searches for the approved request, opens it, and claims it using the claim confirmation modal.
 
 6. **Final verification**  
-   Confirms that the request status updates correctly at each stage.
+   Confirms that the request status reaches `claimed` at the end of the workflow.
+
+### 2. Reviewer visibility restriction before AI completion
+
+This test validates a negative case:
+
+- a requester creates a new request and logs out immediately
+- a reviewer logs in and searches for the same request
+- the test verifies that the request is not yet visible to the reviewer before the AI process completes
 
 ## Project Structure
 
@@ -58,7 +71,10 @@ automation-engineer-takehome/
 ## File Guide
 
 ### `cypress/e2e/workflow.cy.js`
-Contains the end-to-end workflow test. This is the main test specification file that drives the full request lifecycle.
+Contains the main business workflow tests. It currently includes:
+
+- a full happy-path request lifecycle test
+- a negative test verifying that reviewers cannot access a request before the asynchronous AI stage completes
 
 ### `cypress/support/commands.js`
 Defines reusable Cypress commands, including the login helper methods for each user role.
@@ -141,10 +157,11 @@ npx cypress run --spec cypress/e2e/workflow.cy.js
 
 ## Notes on Test Design
 
-- The test uses a unique request name based on the current timestamp to avoid collisions between runs.
-- Login is abstracted into reusable commands to keep the test readable.
-- Assertions are included after each major workflow transition to verify the correct application behavior.
-- The current project focuses on the core end-to-end business flow rather than broad edge-case coverage.
+- Each scenario uses a unique request name based on the current timestamp to avoid collisions between runs.
+- Login is abstracted into reusable commands in `cypress/support/commands.js` to keep the test flow readable.
+- The workflow uses application-facing selectors such as `data-testid` attributes, search inputs, and modal confirmations to drive realistic UI behavior.
+- Assertions are included after each major workflow transition to verify status changes such as `ready for review`, `approved`, and `claimed`.
+- The suite currently balances one strong happy-path test with one meaningful negative scenario rather than attempting broad edge-case coverage.
 
 ## Troubleshooting
 
@@ -169,4 +186,4 @@ baseUrl: "https://automation-engineer-test.onrender.com"
 
 ## Summary
 
-This project is structured to keep the automation flow readable, maintainable, and aligned with the business process under test. The core intent is to demonstrate a practical and professional approach to end-to-end automation using Cypress.
+This project is structured to keep the automation flow readable, maintainable, and aligned with the business process under test. The current suite demonstrates both the primary happy path and a reviewer-access restriction scenario, providing practical end-to-end coverage using Cypress.
