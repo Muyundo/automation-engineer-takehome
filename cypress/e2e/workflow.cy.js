@@ -87,6 +87,30 @@ describe('End-to-End Workflow', () => {
     cy.get('[data-testid="request-status"]')
       .should('contain.text', 'claimed')
 
-  })
+  })  
 
+  it('Reviewer cannot see request before AI completes', () => {
+
+    const requestText = `Request-${Date.now()}`
+
+    // REQUESTER
+    cy.loginAsRequester()
+    cy.url().should('include', '/dashboard')
+
+    cy.contains('New Request').click()
+    cy.get('[data-testid="request-title-input"]').type(requestText)
+    cy.get('[data-testid="request-description-input"]').type('Edge case test')
+    cy.contains('Submit Request').click()
+    cy.contains('Logout').click()
+
+    // REVIEWER
+    cy.loginAsReviewer()
+    cy.url().should('include', '/dashboard')
+
+    cy.get('[data-testid="search-input"]').type(requestText)
+
+    // Verify request is NOT visible
+    cy.contains(requestText).should('not.exist')
+
+})
 })
