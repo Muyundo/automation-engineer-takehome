@@ -163,6 +163,14 @@ npx cypress run --spec cypress/e2e/workflow.cy.js
 - Assertions are included after each major workflow transition to verify status changes such as `ready for review`, `approved`, and `claimed`.
 - The suite currently balances one strong happy-path test with one meaningful negative scenario rather than attempting broad edge-case coverage.
 
+## Key Design Decisions
+
+- A single end-to-end test was used for the main workflow because the process is sequential and state-dependent across roles.
+- Tests were not split to avoid introducing shared state or brittle dependencies between test cases.
+- Cypress retry-ability was used to handle asynchronous AI processing instead of hard waits.
+- Selectors were based on `data-testid` attributes to improve stability and avoid brittle DOM coupling.
+- One focused negative scenario was added instead of multiple edge cases to balance coverage with clarity.
+
 ## Troubleshooting
 
 ### `cy.type() can only accept a string or number. You passed in: undefined`
