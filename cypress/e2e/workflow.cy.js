@@ -1,29 +1,92 @@
 describe('End-to-End Workflow', () => {
 
-  it('Requester creates a request', () => {
+  it('should complete full request lifecycle', () => {
 
-  const requestText = `Request-${Date.now()}`
+    const requestText = `Request-${Date.now()}`
 
-    // 1. Login as requester
+    // REQUESTER
     cy.loginAsRequester()
-    cy.url().should('include', '/dashboard')    
-        //Create a new request
-        cy.contains('New Request').click()
-        cy.get('[data-testid="request-title-input"]').type(requestText)
-        cy.get('[data-testid="request-description-input"]').type('Request created by Cypress E2E test.')
-        cy.contains('Submit Request').click()
+    cy.url().should('include', '/dashboard')
 
-       cy.contains(requestText, { timeout: 60000 })
-         .parent()
-         .as('requestRow')
+    // Create request
+    cy.contains('New Request').click()
+    cy.get('[data-testid="request-title-input"]').type(requestText)
+    cy.get('[data-testid="request-description-input"]')
+      .type('Request created by Cypress E2E test.')
+    cy.contains('Submit Request').click()
 
-       cy.get('@requestRow')
-         .find('[data-testid="request-status"]', { timeout: 60000 })
-         .should('contain', 'ready for review')
+    // Wait for AI → Ready for Review
+    cy.contains(requestText, { timeout: 60000 })
+      .parent()
+      .as('requestRow')
 
-    
+    cy.get('@requestRow')
+      .find('[data-testid="request-status"]', { timeout: 60000 })
+      .should('contain.text', 'ready for review')
+    cy.contains('Logout').click()
 
-     })   
+
+    //  REVIEWER
+    cy.loginAsReviewer()
+    cy.url().should('include', '/dashboard')
+
+    cy.get('[data-testid="search-input"]').type(requestText)
+
+    cy.contains(requestText, { timeout: 10000 })
+      .parent()
+      .as('requestRow')
+
+    cy.get('@requestRow')
+      .find('[data-testid^="request-link-"]')
+      .click()
+
+    cy.url().should('include', '/requests/')
+
+    // Approve request
+    cy.contains('Approve').click()
+
+    cy.get('#approve-modal', { timeout: 10000 })
+      .should('be.visible')
+      .within(() => {
+        cy.contains('button', 'Confirm').click()
+      })
+
+    // Verify approved
+    cy.get('[data-testid="request-status"]')
+      .should('contain.text', 'approved')
+    cy.contains('Logout').click()
+
+
+
+    // CLAIMER
+    cy.loginAsClaimer()
+    cy.url().should('include', '/dashboard')
+
+    cy.get('[data-testid="search-input"]').type(requestText)
+
+    cy.contains(requestText, { timeout: 10000 })
+      .parent()
+      .as('requestRow')
+
+    cy.get('@requestRow')
+      .find('[data-testid^="request-link-"]')
+      .click()
+
+    cy.url().should('include', '/requests/')
+
+    // Claim request
+    cy.contains('Claim').click()
+
+    cy.get('#claim-modal', { timeout: 10000 })
+      .should('be.visible')
+      .within(() => {
+        cy.contains('button', 'Confirm').click()
+      })
+
+    // Verify claimed
+    cy.get('[data-testid="request-status"]')
+      .should('contain.text', 'claimed')
 
   })
 
+})
