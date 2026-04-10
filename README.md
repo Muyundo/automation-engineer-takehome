@@ -54,6 +54,9 @@ This test validates a negative case:
 
 ```text
 automation-engineer-takehome/
+├── .github/
+│   └── workflows/
+│       └── cypress.yml
 ├── cypress/
 │   ├── e2e/
 │   │   └── workflow.cy.js
@@ -90,6 +93,9 @@ Stores local environment-specific values such as test credentials. This file is 
 
 ### `package.json`
 Declares the Cypress dependency required to install and run the test suite.
+
+### `.github/workflows/cypress.yml`
+Defines the GitHub Actions CI workflow that runs Cypress tests on pushes and pull requests to `main`.
 
 ## Prerequisites
 
@@ -135,6 +141,21 @@ Example:
 
 This file is used by the custom login commands in `cypress/support/commands.js`.
 
+### 3. Configure GitHub Actions secrets (for CI)
+
+If you want tests to run in GitHub Actions, add these repository secrets in GitHub:
+
+- `REQUESTER_EMAIL`
+- `REQUESTER_PASSWORD`
+- `REVIEWER_EMAIL`
+- `REVIEWER_PASSWORD`
+- `CLAIMER_EMAIL`
+- `CLAIMER_PASSWORD`
+
+Path in GitHub:
+
+- **Repository Settings** -> **Secrets and variables** -> **Actions** -> **New repository secret**
+
 ## How to Run the Tests
 
 ### Run in the Cypress Test Runner
@@ -154,6 +175,17 @@ Then select:
 ```bash
 npx cypress run --spec cypress/e2e/workflow.cy.js
 ```
+
+### Run in GitHub Actions
+
+The workflow file is located at `.github/workflows/cypress.yml`.
+
+It triggers on:
+
+- pushes to `main`
+- pull requests targeting `main`
+
+The workflow uses Node `18.18.2`, installs dependencies, wakes the target app, and runs `npx cypress run` with credentials loaded from GitHub secrets.
 
 ## Notes on Test Design
 
