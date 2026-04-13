@@ -98,7 +98,7 @@ describe('End-to-End Workflow', () => {
     cy.url().should('include', '/dashboard')
 
     cy.contains('New Request').click()
-    cy.get('[data-testid="request-title-input"]').type(requestText)
+    cy.get('[data-testid="reque"]').type(requestText)
     cy.get('[data-testid="request-description-input"]').type('Edge case test for AI processing.')
     cy.contains('Submit Request').click()
     cy.contains('Logout').click()
