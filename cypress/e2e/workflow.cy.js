@@ -15,7 +15,7 @@ describe('End-to-End Workflow', () => {
       .type('Request created by Cypress E2E test.')
     cy.contains('Submit Request').click()
 
-    // Wait for AI → Ready for Review
+    // Wait for AI Ready for Review
     cy.contains(requestText, { timeout: 60000 })
       .parent()
       .as('requestRow')

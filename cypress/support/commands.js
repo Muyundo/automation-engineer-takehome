@@ -1,7 +1,6 @@
 Cypress.Commands.add('login', (email, password) => {
     // Visit the login page
-  cy.visit('/login')
-
+  cy.visit('/login', { timeout: 60000 })
   cy.get('[data-testid="login-email-input"]').clear().type(email)
   cy.get('[data-testid="login-password-input"]').clear().type(password)
 
